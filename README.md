@@ -1,2 +1,2 @@
 # onlystack-extension
-# onlystack-extension
+Chrome extension for onlystack
