@@ -19,11 +19,17 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["emoji-data.js", "content.js"]
+      "js": ["content.js"]
     }
   ],
   "action": {
     "default_popup": "popup.html",
     "default_title": "OnlyStack-Extension"
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["emojis.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }

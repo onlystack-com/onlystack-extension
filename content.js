@@ -254,8 +254,28 @@ function addQuickEmojiButtonsToForm(retryCount = 0) {
   }
 }
 
+// Load emoji data from JSON file
+let EMOJI_DATA = null;
+
+async function loadEmojiData() {
+  if (EMOJI_DATA) {
+    return EMOJI_DATA;
+  }
+  
+  try {
+    const response = await fetch(chrome.runtime.getURL('emojis.json'));
+    EMOJI_DATA = await response.json();
+    return EMOJI_DATA;
+  } catch (error) {
+    console.error('Failed to load emoji data:', error);
+    return {};
+  }
+}
+
 // Emoji selector functionality with comprehensive library
-function createEmojiSelector() {
+async function createEmojiSelector() {
+  const emojiData = await loadEmojiData();
+  
   const selector = document.createElement('div');
   selector.id = 'only-software-emoji-selector';
   selector.style.cssText = `
@@ -292,7 +312,7 @@ function createEmojiSelector() {
     gap: 4px;
   `;
 
-  const categories = Object.keys(EMOJI_DATA);
+  const categories = Object.keys(emojiData);
   const categoryIcons = {
     'Smileys & People': '😊',
     'Animals & Nature': '🐶',
@@ -336,14 +356,14 @@ function createEmojiSelector() {
       
       // Update content
       currentCategory = category;
-      updateEmojiContent(contentArea, category);
+      updateEmojiContent(contentArea, category, emojiData);
     });
 
     tabsContainer.appendChild(tab);
   });
 
   // Initial content
-  updateEmojiContent(contentArea, currentCategory);
+  updateEmojiContent(contentArea, currentCategory, emojiData);
 
   selector.appendChild(tabsContainer);
   selector.appendChild(contentArea);
@@ -351,10 +371,10 @@ function createEmojiSelector() {
   return selector;
 }
 
-function updateEmojiContent(contentArea, category) {
+function updateEmojiContent(contentArea, category, emojiData) {
   contentArea.innerHTML = '';
   
-  const emojis = EMOJI_DATA[category] || [];
+  const emojis = emojiData[category] || [];
   
   emojis.forEach(emoji => {
     const emojiButton = document.createElement('button');
@@ -393,7 +413,7 @@ function updateEmojiContent(contentArea, category) {
   });
 }
 
-function toggleEmojiSelector(buttonElement) {
+async function toggleEmojiSelector(buttonElement) {
   let selector = document.getElementById('only-software-emoji-selector');
   
   if (selector && selector.style.display !== 'none') {
@@ -402,7 +422,7 @@ function toggleEmojiSelector(buttonElement) {
   }
   
   if (!selector) {
-    selector = createEmojiSelector();
+    selector = await createEmojiSelector();
     document.body.appendChild(selector);
   }
   
